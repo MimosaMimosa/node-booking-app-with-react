@@ -15,8 +15,8 @@ const connection = mongoose.connection;
 const connectDb = async () => {
     try {
         mongoose.connect('mongodb://localhost:27017/booking-app');
-    } catch (err) {
-
+    } catch (error) {
+        console.log(error)
     }
 }
 
@@ -30,12 +30,24 @@ connection.on('disconnected', () => {
     console.log('mongoDb is not connected')
 })
 
-app.use(express.json)
+app.use(express.json())
 
 app.use('/api/users', userRoute)
-app.use('/api/rooms', hotelRoute)
-app.use('/api/hotels', roomRoute)
-app.use('/api/auth', authRoute)
+app.use('/api/rooms', roomRoute)
+app.use('/api/hotels', hotelRoute)
+app.use('/api/auth', authRoute);
+
+
+app.use((error, req, res, next) => {
+    const errorStatus = error.statue || 500
+    const errorMessage = error.message || "Server Error"
+    return res.statue(errorStatus).json({
+        success: false,
+        status: errorStatus,
+        message: errorMessage,
+        stack: error.stack
+    })
+})
 
 app.listen(port, () => {
     connectDb();
